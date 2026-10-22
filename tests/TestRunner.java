@@ -1,13 +1,6 @@
 import java.nio.file.*;
 import java.util.*;
 
-/**
- * Test driver. Calls Algorithms directly (including reconstructPath).
- * Run from the repository root:
- *   javac -d build/tests src/Java/Algorithms.java tests/TestRunner.java
- *   java -cp build/tests TestRunner
- * Reads tests/my_cases.jsonl + tests/expected.jsonl, writes tests/actual.jsonl.
- */
 public class TestRunner {
     static int pass = 0, fail = 0;
 
@@ -16,7 +9,6 @@ public class TestRunner {
         System.out.println((ok ? "PASS " : "FAIL ") + name);
     }
 
-    // ------------------------------------------------------------------ tiny JSON
     static final class P {
         final String s; int i = 0;
         P(String s) { this.s = s; }
@@ -95,7 +87,6 @@ public class TestRunner {
         return o.toString();
     }
 
-    // ------------------------------------------------------------------ dispatch
     static Map<String, Object> run(Map<String, Object> q) {
         String t = (String) q.get("task");
         int n = I(q.get("n"));
@@ -110,10 +101,8 @@ public class TestRunner {
         }
     }
 
-    // ------------------------------------------------------------------ semantic checkers
     static int f(int[] p, int x) { while (p[x] != x) { p[x] = p[p[x]]; x = p[x]; } return x; }
 
-    /** Valid spanning forest: distinct non-loop acyclic edges, n-c of them, given sum == expCost, c comps. */
     static boolean forestOk(int n, int[][] e, int[] ids, long cost, int comps, long expCost, int expComps) {
         if (cost != expCost || comps != expComps || ids.length != n - expComps) return false;
         boolean[] used = new boolean[e.length];
@@ -147,7 +136,6 @@ public class TestRunner {
         return s;
     }
 
-    /** SCC check: exact partition (labels irrelevant) and exact condensation without duplicates. */
     static boolean sccOk(int n, int[] comp, int[][] cond, int[] canonExp, Set<Long> condExp) {
         if (comp.length != n) return false;
         Map<Integer, Integer> rep = new HashMap<>();
@@ -173,10 +161,7 @@ public class TestRunner {
         return true;
     }
 
-    /**
-     * DAG check. Optimality proof: every reachable vertex has a tight parent edge (so dist is achievable)
-     * and no edge can relax any distance (so dist is a lower bound) => exact shortest distances.
-     */
+
     static boolean dagOk(int n, int src, int[][] e, boolean acyc, Long[] dist, int[] par, boolean expAcyc, Long[] expDist) {
         if (acyc != expAcyc) return false;
         if (!acyc) return dist.length == 0 && par.length == 0;
@@ -220,7 +205,6 @@ public class TestRunner {
         }
     }
 
-    // ------------------------------------------------------------------ 1. hand-made cases
     static void fileCases() throws Exception {
         List<String> in = Files.readAllLines(Paths.get("tests/my_cases.jsonl"));
         List<String> exp = Files.readAllLines(Paths.get("tests/expected.jsonl"));
@@ -234,7 +218,6 @@ public class TestRunner {
             check("case " + (i + 1) + " " + ex.get("name") + " -> " + line, verify(q, r, ex));
         }
         Files.write(Paths.get("tests/actual.jsonl"), actual);
-        // state reset: same process, reversed order and then once more; outputs must not change
         boolean same = true;
         for (int pass2 = 0; pass2 < 2; pass2++)
             for (int i = in.size() - 1; i >= 0; i--)
@@ -242,7 +225,6 @@ public class TestRunner {
         check("state reset: batch repeated (reverse order, twice) in one process gives identical outputs", same);
     }
 
-    // ------------------------------------------------------------------ 2. accept alternatives / reject invalid witnesses
     static void witnessTests() {
         int[][] g = {{0, 1, 4}, {1, 2, 2}, {0, 2, 3}};
         check("forest: alternative valid id order [2,1] accepted", forestOk(4, g, new int[]{2, 1}, 5, 2, 5, 2));
@@ -281,7 +263,6 @@ public class TestRunner {
         check("dag: acyclic=false on cyclic graph requires empty arrays", !dagOk(3, 0, tie, false, td, new int[]{-1, 0, 3}, false, null));
     }
 
-    // ------------------------------------------------------------------ 3. route helper
     static boolean routeOk(int src, int tgt, int[][] e, int[] par, Long[] dist, List<Integer> path, StringBuilder log) {
         if (dist[tgt] == null) { log.append(" path=").append(path); return path.isEmpty(); }
         if (path.isEmpty() || path.get(0) != src || path.get(path.size() - 1) != tgt) return false;
@@ -321,7 +302,6 @@ public class TestRunner {
             boolean ok = routeOk(0, t, tie, par, d, p, log);
             check("route(tied/parallel): target " + t + log, ok);
         }
-        // source in the middle of the graph: route from 2 to 3, vertices 0,1 unreachable
         int[][] mid = {{0, 1, 1}, {1, 2, 1}, {2, 3, 4}};
         r = Algorithms.dag(4, 2, mid);
         d = (Long[]) r.get("distance"); par = (int[]) r.get("parent_edge");
@@ -329,7 +309,6 @@ public class TestRunner {
                 && Algorithms.reconstructPath(2, 0, mid, par).isEmpty());
     }
 
-    // ------------------------------------------------------------------ 4. randomised small tests against independent oracles
     static void randomSmall() {
         Random rnd = new Random(20261022L);
         int trials = 3000, bad = 0, cyclic = 0;
@@ -340,20 +319,18 @@ public class TestRunner {
                 ew[i] = new int[]{rnd.nextInt(n), rnd.nextInt(n), rnd.nextInt(11) - 5};
                 eu[i] = new int[]{ew[i][0], ew[i][1]};
             }
-            // reachability closure (paths of length >= 1)
             boolean[][] r = new boolean[n][n];
             for (int[] x : eu) r[x[0]][x[1]] = true;
             for (int k = 0; k < n; k++) for (int i = 0; i < n; i++) for (int j = 0; j < n; j++) if (r[i][k] && r[k][j]) r[i][j] = true;
             boolean cyc = false;
             for (int v = 0; v < n; v++) if (r[v][v]) cyc = true;
             if (cyc) cyclic++;
-            // undirected components
             int[] p = new int[n];
             for (int i = 0; i < n; i++) p[i] = i;
             for (int[] x : eu) p[f(p, x[0])] = f(p, x[1]);
             int c = 0;
             for (int i = 0; i < n; i++) if (f(p, i) == i) c++;
-            // brute force minimum spanning forest over all edge subsets
+            
             long best = Long.MAX_VALUE;
             for (int mask = 0; mask < (1 << m); mask++) {
                 int[] q = new int[n];
@@ -369,7 +346,7 @@ public class TestRunner {
                 Map<String, Object> res = algo.equals("kruskal") ? Algorithms.kruskal(n, ew) : Algorithms.prim(n, ew);
                 if (!forestOk(n, ew, (int[]) res.get("edge_ids"), num(res.get("cost")), I(res.get("components")), best, c)) bad++;
             }
-            // SCC oracle
+            
             int[] canon = new int[n];
             for (int v = 0; v < n; v++) { canon[v] = v; for (int u = 0; u < v; u++) if (r[v][u] && r[u][v]) { canon[v] = u; break; } }
             Set<Long> ce = new HashSet<>();
@@ -379,7 +356,7 @@ public class TestRunner {
             // topo oracle
             Map<String, Object> tp = Algorithms.topo(n, eu);
             if (!topoOk(n, eu, (Boolean) tp.get("acyclic"), (int[]) tp.get("order"), !cyc)) bad++;
-            // DAG oracle: Bellman-Ford on acyclic graphs
+
             int src = rnd.nextInt(n);
             Long[] expD = null;
             if (!cyc) {
@@ -393,7 +370,6 @@ public class TestRunner {
         check("random small graphs: " + trials + " trials (" + cyclic + " cyclic) x 5 algorithms vs brute force / Floyd-Warshall / Bellman-Ford, failures=" + bad, bad == 0);
     }
 
-    // ------------------------------------------------------------------ 5. large inputs and deep chains
     static long ms(long t0) { return (System.nanoTime() - t0) / 1_000_000; }
 
     static void dsuLarge(String name, int n, int[][] ops) {
@@ -499,7 +475,6 @@ public class TestRunner {
         for (int i = 0; pathOk && i < N; i++) if (path.get(i) != i) pathOk = false;
         check("route helper on deep chain: path 0..n-1 of " + N + " vertices", pathOk);
 
-        // planted SCCs: 1000 blocks x 100 vertices, directed cycle inside each block, forward-only edges between blocks
         int B = 1000, S = 100;
         int[] perm = new int[N];
         for (int i = 0; i < N; i++) perm[i] = i;
