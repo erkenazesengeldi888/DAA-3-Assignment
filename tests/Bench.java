@@ -1,13 +1,5 @@
 import java.util.*;
 
-/**
- * Kruskal vs Prim on identical in-memory graphs at three sizes.
- *   javac -d build/tests src/Java/Algorithms.java tests/Bench.java
- *   java -cp build/tests Bench
- * Timed region: ONE call of Algorithms.kruskal / Algorithms.prim on a ready int[][] edge array
- * (includes sorting for Kruskal and adjacency construction + heap for Prim).
- * NOT timed: compilation, graph generation, JSON parsing, input/output, result checking.
- */
 public class Bench {
     static final int WARMUP = 3, REPS = 5;
     static final long SEED = 42L;
