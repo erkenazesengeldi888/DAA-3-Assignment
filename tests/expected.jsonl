@@ -1,0 +1,28 @@
+{"name":"dsu_empty","why":"n=0 with no operations: no states are produced.","states":[]}
+{"name":"dsu_example","why":"Statement example. 4 singletons; {0,1}; {0,1,2}; repeated union changes nothing; self-union changes nothing.","states":[[3,2],[2,3],[2,3],[2,3]]}
+{"name":"dsu_merge_two_groups","why":"Start 5 comps. [0,1]->4,2; [2,3]->3,2; [1,0] repeat; [4,4] self; [1,3] merges two pairs->2,4; [3,4] joins last vertex->1,5.","states":[[4,2],[3,2],[3,2],[3,2],[2,4],[1,5]]}
+{"name":"dsu_no_ops_single","why":"One vertex, no operations: states stay empty (no initial state is printed).","states":[]}
+{"name":"kruskal_example","why":"Statement example. Cheapest edges 1 (w2) and 2 (w3) span {0,1,2}; edge 0 would close a cycle; vertex 3 isolated -> cost 5, 2 components.","cost":5,"components":2}
+{"name":"prim_example","why":"Same graph as kruskal_example solved by Prim; optimum cost and component count must agree.","cost":5,"components":2}
+{"name":"kruskal_loops_parallel_negative","why":"Loop with weight -5 must NOT be taken. Parallel 0-1: take -2 not 3. Two equal 1-2 edges of weight 7: take one. Components {0,1,2},{3},{4}: cost -2+7=5, 3 components, 2 edges.","cost":5,"components":3}
+{"name":"prim_loops_parallel_negative","why":"Same graph as above for Prim (restarts for isolated vertices 3 and 4).","cost":5,"components":3}
+{"name":"kruskal_total_beyond_32bit","why":"All weights 1e9; any spanning tree has 3 edges: 3,000,000,000 > 2^31-1. Tests 64-bit sums.","cost":3000000000,"components":1}
+{"name":"prim_total_beyond_32bit","why":"Same graph for Prim.","cost":3000000000,"components":1}
+{"name":"kruskal_empty","why":"n=0: cost 0, no edges, 0 components.","cost":0,"components":0}
+{"name":"prim_empty","why":"n=0 for Prim.","cost":0,"components":0}
+{"name":"scc_example","why":"Statement example. 0<->1 form one SCC; 2 and 3 are singletons. Cross pairs: {0,1}->{2} (twice, deduplicated), {2}->{3}. Reps (min vertex): [0,2],[2,3].","groups":[[0,1],[2],[3]],"condensation":[[0,2],[2,3]]}
+{"name":"scc_duplicates_loop_isolate","why":"Cycle 0->1->2->0 is one SCC. Edges 2->3 (twice) and 1->3 give ONE pair {0,1,2}->{3}. Loop 3->3 is internal. 4->3 gives pair {4}->{3}. Vertex 5 isolated.","groups":[[0,1,2],[3],[4],[5]],"condensation":[[0,3],[4,3]]}
+{"name":"scc_empty","why":"n=0: both arrays empty.","groups":[],"condensation":[]}
+{"name":"scc_two_cycles","why":"SCCs {0,1} and {2,3,4}; only cross edge 1->2 -> single pair [0,2].","groups":[[0,1],[2,3,4]],"condensation":[[0,2]]}
+{"name":"topo_example","why":"Statement example: 0 and 1 before 2, 2 before 3. Acyclic.","acyclic":true}
+{"name":"topo_cycle","why":"Cycle 0->1->2->0 (vertex 3 hangs off it): not acyclic, order must be empty.","acyclic":false}
+{"name":"topo_self_loop","why":"A self-loop is a cycle.","acyclic":false}
+{"name":"topo_diamond_duplicates","why":"Diamond with a duplicate edge. Edge to an already FINISHED vertex (2->3 after 1->3) is not a cycle, so acyclic=true.","acyclic":true}
+{"name":"topo_empty","why":"n=0: acyclic with empty order.","acyclic":true}
+{"name":"dag_example","why":"Statement example. 0->1 (3), 1->2 (-7) gives dist[2]=-4 (better than 8), 2->3 (4) gives 0; vertex 4 unreachable -> null.","acyclic":true,"distance":[0,3,-4,0,null]}
+{"name":"dag_cycle_unreachable_from_source","why":"Cycle 2<->3 is NOT reachable from source 0, but the whole graph must be checked: acyclic=false and empty arrays.","acyclic":false}
+{"name":"dag_parallel_and_tied","why":"Parallel edges 0->1 (ids 0,1, w5). Vertex 2 reachable by id3 (5) or by 0->1->2 (5+0): tie. Distances [0,5,5]; either parent is valid.","acyclic":true,"distance":[0,5,5]}
+{"name":"dag_minus_one_is_finite","why":"Distance -1 for vertex 1 is a real value; vertex 2 is unreachable and must be null (not -1).","acyclic":true,"distance":[0,-1,null]}
+{"name":"dag_source_in_middle","why":"Source 2: vertices 0 and 1 (before the source in the chain) are unreachable; relaxation never starts from them.","acyclic":true,"distance":[null,null,0,4]}
+{"name":"dag_single_vertex","why":"n=1: only the source, distance [0].","acyclic":true,"distance":[0]}
+{"name":"dag_self_loop","why":"A self-loop makes the graph cyclic.","acyclic":false}

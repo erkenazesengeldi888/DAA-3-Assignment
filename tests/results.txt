@@ -1,0 +1,89 @@
+== 1. hand-made cases (tests/my_cases.jsonl vs tests/expected.jsonl)
+PASS case 1 dsu_empty -> {"states":[]}
+PASS case 2 dsu_example -> {"states":[[3,2],[2,3],[2,3],[2,3]]}
+PASS case 3 dsu_merge_two_groups -> {"states":[[4,2],[3,2],[3,2],[3,2],[2,4],[1,5]]}
+PASS case 4 dsu_no_ops_single -> {"states":[]}
+PASS case 5 kruskal_example -> {"cost":5,"edge_ids":[1,2],"components":2}
+PASS case 6 prim_example -> {"cost":5,"edge_ids":[2,1],"components":2}
+PASS case 7 kruskal_loops_parallel_negative -> {"cost":5,"edge_ids":[2,3],"components":3}
+PASS case 8 prim_loops_parallel_negative -> {"cost":5,"edge_ids":[2,3],"components":3}
+PASS case 9 kruskal_total_beyond_32bit -> {"cost":3000000000,"edge_ids":[0,1,2],"components":1}
+PASS case 10 prim_total_beyond_32bit -> {"cost":3000000000,"edge_ids":[0,1,2],"components":1}
+PASS case 11 kruskal_empty -> {"cost":0,"edge_ids":[],"components":0}
+PASS case 12 prim_empty -> {"cost":0,"edge_ids":[],"components":0}
+PASS case 13 scc_example -> {"component":[0,0,1,2],"condensation":[[0,1],[1,2]]}
+PASS case 14 scc_duplicates_loop_isolate -> {"component":[2,2,2,3,1,0],"condensation":[[1,3],[2,3]]}
+PASS case 15 scc_empty -> {"component":[],"condensation":[]}
+PASS case 16 scc_two_cycles -> {"component":[0,0,1,1,1],"condensation":[[0,1]]}
+PASS case 17 topo_example -> {"acyclic":true,"order":[1,0,2,3]}
+PASS case 18 topo_cycle -> {"acyclic":false,"order":[]}
+PASS case 19 topo_self_loop -> {"acyclic":false,"order":[]}
+PASS case 20 topo_diamond_duplicates -> {"acyclic":true,"order":[0,2,1,3]}
+PASS case 21 topo_empty -> {"acyclic":true,"order":[]}
+PASS case 22 dag_example -> {"acyclic":true,"distance":[0,3,-4,0,null],"parent_edge":[-1,0,2,3,-1]}
+PASS case 23 dag_cycle_unreachable_from_source -> {"acyclic":false,"distance":[],"parent_edge":[]}
+PASS case 24 dag_parallel_and_tied -> {"acyclic":true,"distance":[0,5,5],"parent_edge":[-1,0,3]}
+PASS case 25 dag_minus_one_is_finite -> {"acyclic":true,"distance":[0,-1,null],"parent_edge":[-1,0,-1]}
+PASS case 26 dag_source_in_middle -> {"acyclic":true,"distance":[null,null,0,4],"parent_edge":[-1,-1,-1,2]}
+PASS case 27 dag_single_vertex -> {"acyclic":true,"distance":[0],"parent_edge":[-1]}
+PASS case 28 dag_self_loop -> {"acyclic":false,"distance":[],"parent_edge":[]}
+PASS state reset: batch repeated (reverse order, twice) in one process gives identical outputs
+== 2. alternative answers accepted, invalid witnesses rejected
+PASS forest: alternative valid id order [2,1] accepted
+PASS forest: cycle [0,1,2] rejected
+PASS forest: suboptimal [0,1] (cost 6) rejected
+PASS forest: repeated id [1,1] rejected
+PASS forest: wrong claimed cost rejected
+PASS forest: self-loop id rejected
+PASS topo: alternative order [0,1,2,3] accepted
+PASS topo: order violating an edge rejected
+PASS topo: missing vertex rejected
+PASS topo: repeated vertex rejected
+PASS topo: acyclic=true on cyclic graph rejected
+PASS scc: permuted labels [9,9,3,1] accepted
+PASS scc: merged components rejected
+PASS scc: split component rejected
+PASS scc: duplicate condensation pair rejected
+PASS scc: missing condensation pair rejected
+PASS dag: correct answer accepted
+PASS dag: parent edge that does not end at vertex rejected
+PASS dag: non-tight parent (edge 1 gives 8, not -4) rejected
+PASS dag: wrong distance rejected
+PASS dag: reachable vertex reported unreachable rejected
+PASS dag: tie alternative A (parents 1,2) accepted
+PASS dag: tie alternative B (parents 0,3) accepted
+PASS dag: acyclic=false on cyclic graph requires empty arrays
+== 3. route helper
+PASS route(example): reachable target 3 path=[0, 1, 2, 3] edge_ids=[0, 2, 3] cost=0
+PASS route(example): source 0 path=[0] edge_ids=[] cost=0
+PASS route(example): unreachable target 4 path=[]
+PASS route(example): path to 3 is exactly [0,1,2,3]
+PASS route(example): path to source is [source]
+PASS route(example): unreachable target gives empty list
+PASS route(tied/parallel): target 0 parent_edge=[-1, 0, 3] path=[0] edge_ids=[] cost=0
+PASS route(tied/parallel): target 1 parent_edge=[-1, 0, 3] path=[0, 1] edge_ids=[0] cost=5
+PASS route(tied/parallel): target 2 parent_edge=[-1, 0, 3] path=[0, 2] edge_ids=[3] cost=5
+PASS route(source 2): to 3 = [2,3]; to 0 = []
+== 4. randomised small graphs vs independent oracles
+PASS random small graphs: 3000 trials (2239 cyclic) x 5 algorithms vs brute force / Floyd-Warshall / Bellman-Ford, failures=0
+== 5. full-size inputs and deep chains
+PASS large dsu random n=100000 ops=250000 (33 ms)
+PASS large dsu chain n=100000 ops=99999 (1 ms)
+PASS large dsu star with repeats n=100000 ops=250000 (24 ms)
+PASS large msf random weights n=100000 m=250000 cost=-52685069868415 comps=671 (kruskal 128 ms, prim 856 ms)
+PASS large msf extreme weights n=100000 m=250000 cost=-81730000000000 comps=704 (kruskal 66 ms, prim 459 ms)
+PASS large msf sparse with many isolates n=100000 m=30000 cost=28938 comps=70000 (kruskal 8 ms, prim 8 ms)
+PASS large msf path of -1e9 (cost -99999e9) n=100000 m=99999 cost=-99999000000000 comps=1 (kruskal 1 ms, prim 8 ms)
+PASS deep chain topo forward n=100000 order is exactly 0..n-1 (7 ms)
+PASS deep chain topo backward n=100000 order is exactly n-1..0
+PASS deep cycle of n=100000 topo -> acyclic=false, order empty
+PASS deep chain scc: n singletons, n-1 condensation pairs (56 ms)
+PASS deep cycle scc: one component, no condensation pairs
+PASS deep chain dag n=100000 distance[i] = -i*1e9 (beyond 32 bits) (15 ms)
+PASS route helper on deep chain: path 0..n-1 of 100000 vertices
+PASS planted scc n=100000 m=250000 1000 components, 83757 distinct condensation pairs (122 ms)
+PASS planted graph is cyclic: topo -> false
+PASS random DAG n=100000 m=250000 topo precedence
+PASS random DAG shortest paths from first vertex of the order, reachable=100000 (95 ms)
+PASS dag n=100000: 2-cycle unreachable from source -> acyclic=false, empty arrays
+SUMMARY: 83 passed, 0 failed
