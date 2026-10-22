@@ -74,4 +74,4 @@ Non-unique answers are checked by properties, not by string equality.
 
 ## Results
 
-`results.txt` holds the complete output. Last run: **83 passed, 0 failed**. The timings printed there were measured in the environment where this run was made; run the commands above on your own machine and keep your own output.
+`results.txt` holds the complete output. Last run: **83 passed, 0 failed**. 
