@@ -4,10 +4,8 @@ Language: **Java 17** (`submission.json`: `{"language":"Java"}`). Algorithms: `s
 
 ## 1. Build, run and test commands
 
-Run everything from the repository root.
-
 ```sh
-# launcher checks (compiles the selected language itself)
+# launcher checks 
 python tools/run.py --setup
 python tools/run.py --check                           # 36 public cases, batch repeated twice in one process
 python tools/run.py --input tests/my_cases.jsonl      # my 28 cases through the real JSON adapter
