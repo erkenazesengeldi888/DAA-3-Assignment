@@ -1,5 +1,4 @@
-import java.nio.file.;
-import java.util.;
+import java.util.*;
 
 public class TestRunner {
     static int pass = 0, fail = 0;
