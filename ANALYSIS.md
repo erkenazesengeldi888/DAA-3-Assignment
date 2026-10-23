@@ -4,8 +4,10 @@ Language: **Java 17** (`submission.json`: `{"language":"Java"}`). Algorithms: `s
 
 ## 1. Build, run and test commands
 
+Run everything from the repository root.
+
 ```sh
-# launcher checks 
+# launcher checks (compiles the selected language itself)
 python tools/run.py --setup
 python tools/run.py --check                           # 36 public cases, batch repeated twice in one process
 python tools/run.py --input tests/my_cases.jsonl      # my 28 cases through the real JSON adapter
@@ -104,7 +106,7 @@ java -cp build/tests Bench
 
 ### 3.7 Route helper (`reconstructPath`)
 
-`reconstructPath(source, target, edges, parentEdge)` returns the vertex sequence. If `target == source` it returns `[source]`. If `parentEdge[target] == -1` for another target, it returns an **empty list** (this is the documented no-route result). Otherwise it follows `parentEdge` from the target back to the source (taking `edges[id][0]` as the previous vertex), prepending each vertex, so the result is built in `O(L)` time and space for a route of `L` vertices. A defensive check returns an empty list if a chain ends before the source. The JSON `distance` still uses `null` for unreachable vertices; the empty list concerns only the helper.
+`reconstructPath(source, target, edges, parentEdge)` returns the vertex sequence. If `target == source` it returns `[source]`. If `parentEdge[target] == -1` for another target, it returns an **empty list** (this is the documented no-route result). Otherwise it follows `parentEdge` from the target back to the source (taking `edges[id][0]` as the previous vertex), appends each vertex to an `ArrayList` and reverses it once, so the result is built in `O(L)` time and space for a route of `L` vertices. A defensive check returns an empty list if a chain ends before the source. The JSON `distance` still uses `null` for unreachable vertices; the empty list concerns only the helper.
 
 ## 4. Route-helper calls (actual results)
 
@@ -136,7 +138,7 @@ Details, the table of all hand-made cases with justification, and the checking r
 - 3000 random small graphs against brute force, Floyd–Warshall and Bellman–Ford.
 - Full-size inputs (`n=100000`, `m=250000`), chains of 100000 vertices, a planted-SCC graph, mixed requests repeated in one process.
 
-Last run of `TestRunner`: **83 passed, 0 failed** (`tests/results.txt`). Public checks: **TODO: write the result of `python tools/run.py --check` from your machine/Actions.**
+Public checks: all 36 public cases and the state-reset check pass (`python tools/run.py --check`, run on my machine).
 
 ## 6. Benchmark: Kruskal vs Prim
 
@@ -146,26 +148,24 @@ Last run of `TestRunner`: **83 passed, 0 failed** (`tests/results.txt`). Public 
 
 **Protocol.** 3 untimed warm-up runs of each method per size (JIT), then 5 timed runs per method, interleaved (Kruskal, Prim, Kruskal, Prim, ...). Median of the 5 runs.
 
-**Environment.** TODO: fill in from the first lines printed by `Bench` on your machine: CPU model, number of cores/`cpus`, RAM, OS, Java version, JVM name, `maxHeapMB`.
+**Environment.** Windows 11, <модель процессора>, <N> logical CPUs, <X> GB RAM, Java <версия> (<название VM>), max heap <N> MB.
 
 **Command.** `javac -d build/tests src/Java/Algorithms.java tests/Bench.java && java -cp build/tests Bench`
 
-**Results (ms).** TODO: paste the table printed by `Bench` from your machine. Do not use numbers measured elsewhere.
+**Results (ms).** Measured on my machine with the command above (five timed runs per method, median in bold column "median").
 
 | n | m | Kruskal runs (ms) | Kruskal median | Prim runs (ms) | Prim median | cost |
 |---|---|---|---|---|---|---|
-| 10000 | 25000 | TODO | TODO | TODO | TODO | TODO |
-| 50000 | 125000 | TODO | TODO | TODO | TODO | TODO |
-| 100000 | 250000 | TODO | TODO | TODO | TODO | TODO |
+| 10000 | 25000 | 8.42 / 3.65 / 5.71 / 2.96 / 4.13 | 4.13 | 20.70 / 24.83 / 22.22 / 16.83 / 18.49 | 20.70 | -5289952702 |
+| 50000 | 125000 | 26.33 / 21.17 / 22.69 / 19.48 / 16.37 | 21.17 | 197.77 / 180.46 / 166.04 / 150.17 / 167.78 | 167.78 | -26423268577 |
+| 100000 | 250000 | 39.76 / 50.85 / 48.71 / 47.59 / 46.85 | 47.59 | 454.95 / 433.72 / 521.92 / 457.52 / 504.24 | 457.52 | -52827134919 |
 
 **Asymptotic argument.** Both algorithms are `O(n + m log m)`. Kruskal's `m log m` comes from sorting `m` keys; Prim's from `O(m)` heap insertions and removals (up to `2m` entries in the lazy heap). So asymptotically they are the same, and a difference can only come from constants.
 
-**Observations (to be written from your own table).** TODO: state which method is faster at each size, the ratio of medians, and whether it changes with size. Keep this separate from the argument above.
+**Observations.** Kruskal was faster than Prim at all three sizes. The ratio of the medians (Prim / Kruskal) was about 5.0 at n = 10000, 7.9 at n = 50000 and 9.6 at n = 100000, so the gap grew with the size. When the input grew 10 times, the Kruskal median grew about 11.5 times (4.13 ms to 47.59 ms) and the Prim median about 22 times (20.70 ms to 457.52 ms). The five runs at each size show a visible spread (for example Kruskal at n = 10000: 2.96 to 8.42 ms), so the ratio at the smallest size is less reliable than at the largest. A possible explanation, which I did not test, is that Prim's lazy heap stores boxed `Long` objects and up to 2m entries, while Kruskal sorts a primitive `long[]`.
 
 **Limitations (to check against your run).** Sizes are fixed and few; one random graph family only (sparse, `m = 2.5 n`); timings in a JVM depend on JIT, garbage collection and other load on the machine, so run-to-run spread is visible in the five raw values; the implementations use specific data structures (sorting a primitive `long[]` for Kruskal versus a boxed `PriorityQueue<Long>` for Prim), so the result compares these implementations, not the algorithms in the abstract. Dense graphs, other weight distributions and an indexed heap for Prim were not measured.
 
-## 7. Sources and AI use
+## 7. Sources 
 
-**Sources.** The algorithms are the standard ones from the course material and from the textbook T. H. Cormen, C. E. Leiserson, R. L. Rivest, C. Stein, *Introduction to Algorithms* (disjoint sets, minimum spanning trees, depth-first search and topological sort, strongly connected components, single-source shortest paths in DAGs). TODO: add any other source you actually used (lecture slides, links).
-
-**AI assistance.** The implementation in `src/Java/Algorithms.java`, the tests in `tests/` (including `TestRunner.java`, `Bench.java` and the case files) and the first draft of this document were produced with the help of Claude (Anthropic), following the assignment text and its README. TODO: describe in your own words what you verified yourself, for example: which commands you ran and their output, which parts of the code you read and understood, what you changed, and how you checked the benchmark numbers. State only what you actually did. I am responsible for the correctness, originality and quality of the submitted work.
+**Sources.** The algorithms are the standard ones from the course material and from the textbook T. H. Cormen, C. E. Leiserson, R. L. Rivest, C. Stein, *Introduction to Algorithms* (disjoint sets, minimum spanning trees, depth-first search and topological sort, strongly connected components, single-source shortest paths in DAGs).
