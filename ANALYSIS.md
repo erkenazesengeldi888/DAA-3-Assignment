@@ -146,9 +146,9 @@ Public checks: all 36 public cases and the state-reset check pass (`python tools
 
 **Timer and boundary.** `System.nanoTime()`. The timed region is exactly one call to `Algorithms.kruskal` or `Algorithms.prim` on an already built in-memory edge array. It *includes* what each algorithm needs internally (sorting for Kruskal; adjacency build and the heap for Prim) and the construction of the result map. It *excludes* compilation, graph generation, JSON parsing, input/output and result checking. The boundary is identical for both methods.
 
-**Protocol.** 3 untimed warm-up runs of each method per size (JIT), then 5 timed runs per method, interleaved (Kruskal, Prim, Kruskal, Prim, ...). Median of the 5 runs.
+**Protocol.** 3 untimed warm-up runs of each method per size (JIT), then 5 timed runs per method, interleaved (Kruskal, Prim, Kruskal, Prim). Median of the 5 runs.
 
-**Environment.** Windows 11, <модель процессора>, <N> logical CPUs, <X> GB RAM, Java <версия> (<название VM>), max heap <N> MB.
+**Environment.** Windows 11, <N> logical CPUs, <X> GB RAM, Java 17, max heap <N> MB.
 
 **Command.** `javac -d build/tests src/Java/Algorithms.java tests/Bench.java && java -cp build/tests Bench`
 
